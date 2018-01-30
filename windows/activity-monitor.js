@@ -1,6 +1,9 @@
 
 $(()=>{
    const os = require('os')
+   const fs = require('fs')
+   const {app} = require('electron')
+   const userpath = app.getPath('userData')
    let datasets = []
    // 返回一个对象数组, 包含每个逻辑 CPU 内核的信息.
    const cpus = os.cpus()
@@ -63,7 +66,18 @@ const renderData = () => {
    }
    
    initChart()
+   // 十秒刷新一次
    setInterval(function(){
     initChart()
    }, 10000)
+
+    document.getElementById('savefile').addEvent,Listener('click', function(){
+        fs.writeFile(path + "test.txt", "hello world!", function(err) {
+            if(err) {
+                return console.log(err);
+            }
+            console.log("The file was saved!");
+        });
+    })
+   
 })
