@@ -1,0 +1,10 @@
+html,body,.container-fluid{
+    height:100%;
+    background-color: #111;
+}
+html{
+    -webit-app-region:drag;/*把整个 html 都变成了一个可拖拽的对象*/
+}
+.container-fluid{
+    padding:25px;
+}
