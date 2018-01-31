@@ -2,8 +2,18 @@
 $(()=>{
    const os = require('os')
    const fs = require('fs')
-   const {app} = require('electron')
+   const app = require('electron').remote.app
+   const clipboard = require('electron').remote.clipboard
+   const dialog = require('electron').remote.dialog
    const userpath = app.getPath('userData')
+   const imageType = 'image/png'
+   const labels = [
+    '用户模式时间 H',
+    '系统模式时间 H',
+    '空闲模式时间 H',
+    '良好模式时间 H',
+    '中断模式时间 H'
+]
    let datasets = []
    // 返回一个对象数组, 包含每个逻辑 CPU 内核的信息.
    const cpus = os.cpus()
@@ -44,14 +54,8 @@ const renderData = () => {
         var chart = new Chart($('.chart'),{
             type: 'doughnut',
             data: {
-                labels: [
-                '用户模式时间 H',
-                '系统模式时间 H',
-                '空闲模式时间 H',
-                '良好模式时间 H',
-                '中断模式时间 H'
-            ],
-            datasets: datasets
+                labels: labels,
+                datasets: datasets
         },
         options: {
             title:{
@@ -71,13 +75,52 @@ const renderData = () => {
     initChart()
    }, 10000)
 
-    document.getElementById('savefile').addEvent,Listener('click', function(){
-        fs.writeFile(path + "test.txt", "hello world!", function(err) {
+   function formatData () {
+       let str = ''
+       for(let item of datasets){
+        str += item.data.join(',')
+        str+='\r'
+       }
+       return str
+
+   }
+
+    function saveImage (imgpath) {
+        
+        let canvas = $('.chart')[0]
+        let imgData = canvas.toDataURL(imageType);
+        //过滤data:URL
+        var base64Data = imgData.replace(/^data:image\/\w+;base64,/, "");
+        var dataBuffer = new Buffer(base64Data, 'base64');
+
+        // 保存成图
+        fs.writeFileSync(imgpath,dataBuffer,  "binary");
+        return imgpath
+    }
+    document.getElementById('savefile').addEventListener('click', function(){
+        
+        let bufstr = labels.join(',')+'\r'
+        bufstr += formatData()
+
+        fs.writeFile(userpath + "/test.cvs", bufstr, function(err) {
             if(err) {
                 return console.log(err);
             }
-            console.log("The file was saved!");
+            console.log("The file was saved! " + userpath);
         });
+    })
+
+    document.getElementById('saveimage').addEventListener('click', function(){
+        dialog.showSaveDialog(function(filename){
+            saveImage (filename) 
+        })
+    })
+
+    document.getElementById('copyImg').addEventListener('click', function(){
+        let imgpath = userpath + '/'  + Date.parse(new Date()) +"test.png"
+         saveImage (imgpath) 
+        // imgpath  = fs.existsSync(imgpath)
+        clipboard.writeImage(imgpath)
     })
    
 })
